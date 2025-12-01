@@ -1,0 +1,63 @@
+﻿<Window x:Class="Theater.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Theater"
+        mc:Ignorable="d"
+        Title="Theatro" MinHeight="800" MinWidth="1100"
+        Loaded="OnLoad" WindowStartupLocation="CenterScreen">
+
+    <Grid Background="#FF242740">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        
+        <!-- Header -->
+        <Border Background="#FF242740" BorderThickness="0,0,0,2"
+                BorderBrush="#FFB38D24">
+            <Grid>
+                <TextBlock DockPanel.Dock="Left" Text="Theatro" FontFamily="Playfair Display" FontSize="24" Foreground="#EAB308" Margin="20 0 0 0" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 0 20 0">
+                    <Button Content="Спектакли" Style="{StaticResource NavButton}" Click="MainBtn_Click"/>
+                    <Button Content="Труппа" Style="{StaticResource NavButton}" Click="TruppaBtn_Click"/>
+                    <Button Content="Администрация" Style="{StaticResource NavButton}"/>
+                    <Button Content="Профиль" Style="{StaticResource NavButton}" Click="Profile_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Frame -->
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" 
+                      VerticalScrollBarVisibility="Hidden">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+        
+                <Frame x:Name="MainFrame" Source="MainPage.xaml" NavigationUIVisibility="Hidden"/>
+                <Frame x:Name="ProfileFrame" Source="ProfilePage.xaml" NavigationUIVisibility="Hidden"/>
+                <Frame x:Name="TruppaFrame" Source="TruppaPage.xaml" NavigationUIVisibility="Hidden"/>
+                <!--Footer-->
+                <Border Background="#FF242740" BorderThickness="0,2,0,0"
+BorderBrush="#FFB38D24" Grid.Row="100">
+                    <Grid>
+                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="0 0 20 0">
+                            <TextBlock Text="© 2025 Theatro. Все права защищены." Foreground="White"
+                                       HorizontalAlignment="Center" Margin="0 5"/>
+                            <TextBlock Text="Почувствуйте магию театра в новом исполнении." Foreground="White"
+                                       HorizontalAlignment="Center" Margin="0 5"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+        <Frame x:Name="BookingFrame" Grid.Row="1"
+               Source="BookingPage.xaml" NavigationUIVisibility="Hidden"/>
+    </Grid>
+</Window>

@@ -1,0 +1,355 @@
+﻿<Page x:Class="Theater.BookingPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Theater"
+      mc:Ignorable="d" 
+      d:DesignHeight="800" d:DesignWidth="1050"
+      Title="BookingPage" Loaded="OnLoad">
+
+    <Grid>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden">
+            <Grid>
+                <Grid Background="#FF242740" Opacity="0.99">
+                    <Grid.Effect>
+                        <BlurEffect Radius="50" KernelType="Gaussian" RenderingBias="Quality"/>
+                    </Grid.Effect>
+                </Grid>
+                <StackPanel>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="100"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="400"/>
+                            <RowDefinition Height="*"/>
+
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="300"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!--Title-->
+
+                        <StackPanel Grid.ColumnSpan="4">
+                            <TextBlock Text="{Binding Path=selectedPerformance.Title}" Foreground="White" Style="{StaticResource HeadingText}"
+               Margin="0 10" FontWeight="Bold"/>
+                            <TextBlock Text="Выберите сеанс и места" Style="{StaticResource HeadingText}"
+               Margin="0" FontSize="18"/>
+                        </StackPanel>
+
+                        <!--Plays-->
+                        <Grid Grid.ColumnSpan="2" Grid.Row="1">
+                            <Border Style="{StaticResource CardBorder}" Width="Auto">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="Доступные сеансы" Foreground="White"
+                                   HorizontalAlignment="Center" FontSize="20"/>
+                                    <ItemsControl x:Name="avaibleSessionsIC" ItemsSource="{Binding Path=selectedPerformance.avaibleSession}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="8" Margin="10" Padding="10" Width="250">
+                                                    <Grid>
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding Date}" Style="{StaticResource SubText}" FontSize="12"/>
+                                                            <TextBlock Text="{Binding Time}" FontWeight="Bold" FontSize="18" Style="{StaticResource SubText}"/>
+                                                            <TextBlock Text="{Binding Path=_Hall.Name}" Foreground="#EAB308" Style="{StaticResource SubText}"/>
+                                                        </StackPanel>
+                                                        <Button Style="{StaticResource Button-Transparency}" Click="SelectSession_Click"/>
+                                                    </Grid>
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="#FF2A2F5A"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                    <DataTrigger.EnterActions>
+                                                                        <BeginStoryboard>
+                                                                            <Storyboard>
+                                                                                <ColorAnimation 
+                                                                                To="#FFB39400" 
+                                                                                Duration="0:0:0.3" 
+                                                                                Storyboard.TargetProperty="Background.(SolidColorBrush.Color)"/>
+                                                                            </Storyboard>
+                                                                        </BeginStoryboard>
+                                                                    </DataTrigger.EnterActions>
+                                                                    <DataTrigger.ExitActions>
+                                                                        <BeginStoryboard>
+                                                                            <Storyboard>
+                                                                                <ColorAnimation 
+                                                                                To="#FF2A2F5A"
+                                                                                Duration="0:0:0.3" 
+                                                                                Storyboard.TargetProperty="Background.(SolidColorBrush.Color)"/>
+                                                                            </Storyboard>
+                                                                        </BeginStoryboard>
+                                                                    </DataTrigger.ExitActions>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Seats -->
+                        <Border Grid.Row="2" Style="{StaticResource CardBorder}" Width="Auto" Height="Auto">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition Height="40"/>
+                                </Grid.RowDefinitions>
+                                <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Hidden"
+                                          HorizontalAlignment="Center">
+                                    <Grid>
+                                        <!-- Сетка мест -->
+                                        <ItemsControl Grid.Row="2" ItemsSource="{Binding Path=selectedSession._Hall.Rows}" Margin="0 30 0 0">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Vertical"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal" Margin="0 4">
+                                                        <!-- Номер ряда -->
+                                                        <TextBlock Text="{Binding RowNumber}" 
+                                       Width="40" FontWeight="Bold" 
+                                       Foreground="#FFD700" FontSize="14"
+                                       VerticalAlignment="Center" TextAlignment="Right" Margin="0 0 15 0"/>
+
+                                                        <!-- Места в ряду -->
+                                                        <ItemsControl ItemsSource="{Binding Seats}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <UniformGrid Rows="1"/>
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Grid>
+                                                                        <ToggleButton Content="{Binding Name}" IsEnabled="{Binding Status}" Click="SeatBtn_Click" Style="{StaticResource SeatButtonStyle}"/>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Grid>
+                                </ScrollViewer>
+
+                                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Margin="10">
+                                        <Border Background="#242740" Width="20" Height="20" BorderBrush="White" BorderThickness="0.5" CornerRadius="6" Margin="0 0 8 0"/>
+                                        <TextBlock Text="Свободно" VerticalAlignment="Center" Foreground="White"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="10">
+                                        <Border Background="#a80202" Width="20" Height="20" BorderBrush="White" BorderThickness="0.5" CornerRadius="6" Margin="0 0 8 0"/>
+                                        <TextBlock Text="Занято" VerticalAlignment="Center" Foreground="White"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="10">
+                                        <Border Background="#d48d00" Width="20" Height="20" BorderBrush="White" BorderThickness="0.5" CornerRadius="6" Margin="0 0 8 0"/>
+                                        <TextBlock Text="Выбрано" VerticalAlignment="Center" Foreground="White"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Info -->
+                        <Border Grid.Row="2" Grid.Column="1" Grid.RowSpan="2" Style="{StaticResource CardBorder}" Width="Auto">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="40"/>
+                                    <RowDefinition Height="100"/>
+                                    <RowDefinition Height="100"/>
+                                    <RowDefinition/>
+                                    <RowDefinition Height="50"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Text="Информация о бронировании" Style="{StaticResource SubText}" FontSize="13.5"
+                                       TextWrapping="WrapWithOverflow" HorizontalAlignment="Center" Margin="10,0,0,0" FontWeight="Bold"/>
+                                <Border Margin="10 0" BorderThickness="0,0,0,2" BorderBrush="Goldenrod"/>
+
+                                <Image Grid.Row="1" Source="{Binding Path=selectedPerformance.Image}" Stretch="Fill"/>
+                                <!-- More info -->
+                                <Grid Grid.Row="2" Margin="5,0">
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource SubText}" Foreground="LightSlateGray" Text="Спектакль:"/>
+                                        <TextBlock Style="{StaticResource SubText}" Foreground="LightSlateGray" Text="Сеанс:"/>
+                                        <TextBlock Style="{StaticResource SubText}" Foreground="LightSlateGray" Text="Зал:"/>
+                                        <TextBlock Style="{StaticResource SubText}" Foreground="LightSlateGray" Text="Цена за место:"/>
+                                    </StackPanel>
+                                    <StackPanel HorizontalAlignment="Right">
+                                        <TextBlock HorizontalAlignment="Right" Style="{StaticResource SubText}" Text="{Binding Path=selectedPerformance.Title}"/>
+                                        <TextBlock HorizontalAlignment="Right" Style="{StaticResource SubText}" Text="{Binding Path=selectedSession.Date}"/>
+                                        <TextBlock HorizontalAlignment="Right" Style="{StaticResource SubText}" Text="{Binding Path=selectedSession._Hall.Name}"/>
+                                        <TextBlock HorizontalAlignment="Right" Style="{StaticResource SubText}" >
+                                        <Run Text="{Binding Path=selectedSession.Price}"/>
+                                        <Run Text="₽" Foreground="Goldenrod"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                                <Border Grid.Row="2" Margin="10 0" BorderThickness="0,0,0,2" BorderBrush="Goldenrod"/>
+                                <!-- Total -->
+                                <Grid Grid.Row="3" Margin="5,0">
+                                    <StackPanel>
+                                        <Grid>
+                                            <TextBlock Style="{StaticResource SubText}" Text="Итого:" FontSize="16" FontWeight="DemiBold"/>
+                                            <TextBlock HorizontalAlignment="Right" Style="{StaticResource SubText}" FontSize="16" FontWeight="DemiBold">
+                                    <Run x:Name="FullCost" Text="0"/>
+                                    <Run Text="₽" Foreground="Goldenrod"/>
+                                            </TextBlock>
+                                        </Grid>
+                                        <TextBlock Style="{StaticResource SubText}" Text="Выбранные места:" FontSize="16" FontWeight="DemiBold"/>
+                                        <ScrollViewer VerticalAlignment="Stretch" MaxHeight="200" Background="Transparent" VerticalScrollBarVisibility="Hidden"
+                                                  HorizontalScrollBarVisibility="Disabled">
+                                            <ItemsControl ItemsSource="{Binding selectedSeats}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border CornerRadius="5" Width="40" Height="40" Background="Goldenrod" Margin="2">
+                                                            <TextBlock Style="{StaticResource SubText}" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                        <Run Text="{Binding RowName}"/>
+                                                        <Run Text="."/>
+                                                        <Run Text="{Binding Name}"/>
+                                                            </TextBlock>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                        <Button Margin="0, 20" Grid.Row="4" Style="{StaticResource BuyButton}" Click="GoToBuy_Click">
+                                            <TextBlock Text="Перейти к оформлению"/>
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="3"
+                            Style="{StaticResource CardBorder}" Width="Auto">
+                            <TextBlock Text="{Binding Path=selectedPerformance.Description}" Foreground="White"
+                                   VerticalAlignment="Top" FontSize="14" TextWrapping="Wrap"/>
+                        </Border>
+                    </Grid>
+
+
+                    <TextBlock Margin="20,5" Style="{StaticResource HeadingText}"
+                       Text="Отзывы" Foreground="White"/>
+                    <Border Style="{StaticResource CardBorder}" Width="Auto" Height="Auto">
+                        <ItemsControl ItemsSource="{Binding reviews}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource CardBorder}" Background="#242740" Width="Auto">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="40"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <Border BorderThickness="0" Background="Transparent">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Image Source="{Binding Path=_User.Image}">
+                                                        <Image.Clip>
+                                                            <RectangleGeometry Rect="0, 0, 40, 40" RadiusX="20" RadiusY="20"/>
+                                                        </Image.Clip>
+                                                    </Image>
+                                                    <StackPanel Orientation="Vertical">
+                                                        <TextBlock Text="{Binding Path=_User.Name}" Foreground="White"/>
+                                                        <TextBlock Text="{Binding DateStr}" Foreground="LightSlateGray"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                <TextBlock Text="{Binding Rating}" Foreground="White" VerticalAlignment="Center" Margin="5, 0"/>
+                                                <Image Source="pack://application:,,,/icons/star_f.png" Width="20"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Comment}" Foreground="White"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+        <Button Content="Назад" Background="Transparent" Margin="10"
+                Foreground="White" VerticalAlignment="Top" HorizontalAlignment="Left"
+                FontSize="18" Style="{StaticResource Button}" Width="100" Height="40" Click="Return_Click"/>
+
+        <Grid Background="Black" Opacity="0.6" x:Name="BlurGrid">
+            <Grid.Effect>
+                <BlurEffect KernelType="Gaussian" Radius="100" RenderingBias="Quality"/>
+            </Grid.Effect>
+        </Grid>
+        <Border x:Name="BuyWindow" Style="{StaticResource CardBorder}" Width="400" Height="300" BorderThickness="2" BorderBrush="Black"  Background="#FF35395A">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Выберите способ оплаты:" Foreground="White" FontSize="18"
+                   VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,5"/>
+                <StackPanel Grid.Row="1">
+                    <Grid Height="36">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="9*"/>
+                        </Grid.ColumnDefinitions>
+                        <ToggleButton BorderBrush="Black" IsChecked="True" Margin="5" Background="#FF39476B"/>
+                        <TextBlock Grid.Column="1" Text="Банковская карта" VerticalAlignment="Center"
+                           Foreground="White" FontSize="18" Margin="10,0"/>
+                    </Grid>
+                    <Grid Height="36">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="9*"/>
+                        </Grid.ColumnDefinitions>
+                        <ToggleButton BorderBrush="Black" IsChecked="False" Margin="5" Background="#FF39476B"/>
+                        <TextBlock Grid.Column="1" Text="ApplePay" VerticalAlignment="Center"
+                           Foreground="White" FontSize="18" Margin="10,0"/>
+                    </Grid>
+                    <Grid Height="36">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="9*"/>
+                        </Grid.ColumnDefinitions>
+                        <ToggleButton BorderBrush="Black" IsChecked="False" Margin="5" Background="#FF39476B"/>
+                        <TextBlock Grid.Column="1" Text="СБП" VerticalAlignment="Center"
+                           Foreground="White" FontSize="18" Margin="10,0"/>
+                    </Grid>
+                </StackPanel>
+                <Button Grid.Row="2" Content="Подтвердить покупку" FontSize="18"
+                VerticalAlignment="Center" HorizontalAlignment="Center"
+                Style="{StaticResource BuyButton}" Width="300" Height="60"
+                        Click="Buy_Click"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>
