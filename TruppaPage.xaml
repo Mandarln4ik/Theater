@@ -30,7 +30,7 @@
                                 Background="#FF2A2F5A" Margin="10 10">
                             <StackPanel Orientation="Vertical">
                                 <Image Width="200" Height="200" VerticalAlignment="Center"
-       HorizontalAlignment="Center" Source="{Binding Image}">
+                                       HorizontalAlignment="Center" Source="{Binding Image}" Margin="0 50">
                                     <Image.Clip>
                                         <RectangleGeometry RadiusX="100" RadiusY="100"
                            Rect="0,0,200,200"/>

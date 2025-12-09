@@ -1,6 +1,7 @@
 ﻿using MySql.Data.MySqlClient;
 using MySql.Data.Types;
 using Org.BouncyCastle.Tls.Crypto;
+using QRCoder;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,7 +10,9 @@ using System.Configuration;
 using System.Data;
 using System.Data.Entity;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -17,9 +20,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Theater.DataBase;
 using Theater.Properties;
 using Theater.Services.DataBase;
+using Nav = Theater.Services.NavigationService;
 
 namespace Theater
 {
@@ -29,6 +34,13 @@ namespace Theater
     public partial class App : Application, INotifyPropertyChanged
     {
         public static App instance;
+
+        public bool isAdmin 
+        {
+            get;
+            set { field = value; OnPropertyChanged(nameof(isAdmin)); } 
+        } = false;
+
         public User currentUser
         {
             get;
@@ -39,6 +51,11 @@ namespace Theater
             return instance;
         }
 
+        public BitmapImage QRcode
+        {
+            get;
+            set { field = value; OnPropertyChanged(nameof(QRcode)); }
+        } = new();
         public ObservableCollection<UpcomingSession> upcomingSessions { get; set; } = new();
 
         public ObservableCollection<Performance> Performances { get; set; } = new();
@@ -87,7 +104,6 @@ namespace Theater
 
         private async Task CollectUpcomingSessions()
         {
-            Debug.WriteLine("Sessions");
             var con = DBmanager.GetConnection();
             MySqlCommand cmd = new MySqlCommand("SELECT \r\n    perf.id,\r\n   h.name AS НомерЗала,\r\n    p.title AS НазваниеИгры,\r\n    perf.performance_date AS ДатаНачала \r\nFROM \r\n    Performances perf\r\n    INNER JOIN Halls h ON perf.hall_id = h.id\r\n    INNER JOIN Plays p ON perf.play_id = p.id\r\nWHERE \r\n    perf.performance_date > NOW()\r\n GROUP BY p.title ORDER BY \r\n    perf.performance_date ASC;", con);
 
@@ -112,7 +128,6 @@ namespace Theater
 
         private async Task CollectTruppa()
         {
-            Debug.WriteLine("Trupa");
             var con = DBmanager.GetConnection();
             MySqlCommand cmd = new MySqlCommand("SELECT first_name, last_name, birth_date, description, image_path FROM `Actors`", con);
             Dispatcher.Invoke(() =>
@@ -188,7 +203,6 @@ namespace Theater
             {
                 //проверяем когда мы были в аккаунте в последний раз
                 if (Settings.Default.LastLogIn == null || Settings.Default.PasswordHash == null || Settings.Default.Email == null) return;
-                Debug.WriteLine($"{DateTime.Now} - {Settings.Default.LastLogIn} = {(DateTime.Now - Settings.Default.LastLogIn).Days}");
                 if (DateTime.Now - Settings.Default.LastLogIn > TimeSpan.FromDays(7))
                 {
                     //Выходим из аккаунта
@@ -211,6 +225,7 @@ namespace Theater
                         currentUser = new User(id);
                         Settings.Default.LastLogIn = DateTime.Now;
                         Debug.WriteLine("Успешный вход");
+                        isAdmin = currentUser.Role == UserRole.admin;
                     }
                 }
                 Settings.Default.Save();
@@ -226,6 +241,7 @@ namespace Theater
             if (SignUpWindow.DialogResult == true)
             {
                 currentUser = SignUpWindow.User;
+                isAdmin = currentUser.Role == UserRole.admin;
             }
         }
 
@@ -238,30 +254,85 @@ namespace Theater
             if (SignInWindow.DialogResult == true)
             {
                 currentUser = SignInWindow.User;
+                isAdmin = currentUser.Role == UserRole.admin;
             }
         }
 
-        public void SignOut()
+        public void LogOut()
         {
             currentUser = null;
             Settings.Default.Email = null;
             Settings.Default.PasswordHash = null;
             Settings.Default.LastLogIn = DateTime.MinValue;
             Settings.Default.Save();
+            Nav.Instance.NavigateTo(0);
+            isAdmin = false;
         }
 
         #endregion
 
-        public void Buy()
+        public bool Buy()
         {
             var conn = DBmanager.GetConnection();
-            foreach (var item in selectedSeats)
+            try
             {
-                var cmd = new MySqlCommand($"INSERT INTO `Tickets` (`performance_id`, `seat_id`, `user_id`, `price`) VALUES ('{selectedPerformance.Id}','{item.Id}','{currentUser.Id}','{selectedSession.Price}');", conn);
-                cmd.ExecuteNonQuery();
+                foreach (var item in selectedSeats)
+                {
+                    var cmd = new MySqlCommand($"INSERT INTO `Tickets` (`performance_id`, `seat_id`, `user_id`, `price`) VALUES ('{selectedPerformance.Id}','{item.Id}','{currentUser.Id}','{selectedSession.Price}');", conn);
+                    cmd.ExecuteNonQuery();
+                }
+                ReloadPerformance();
+
+                currentUser = new User(currentUser.Id);
+                isAdmin = currentUser.Role == UserRole.admin;
             }
+            catch (Exception ex)
+            {
+                return false;
+            }
+            return true;
         }
 
+        public void ReloadPerformance()
+        {
+            int index = Performances.IndexOf(selectedPerformance);
+            int id = Performances[index].Id;
+            int selectedSessionIndex = Performances[index].avaibleSession.IndexOf(selectedSession);
+            selectedPerformance = Performances[index] = new Performance(id);
+            selectedSession = selectedPerformance.avaibleSession[selectedSessionIndex];
+            selectedSession.IsSelected = true;
+        }
+
+        public void GenerateQRcode(int performanceId)
+        {
+            QRCodeGenerator qrGenerator = new QRCodeGenerator();
+            QRCodeData qrCodeData = qrGenerator.CreateQrCode($"{performanceId}, {currentUser.Id}, {currentUser.OrderViews.First(o => o.PerformanceId == performanceId).Seats}", QRCodeGenerator.ECCLevel.Q);
+            QRcode = ConvertBitmapToBitmapImage(qrCodeData);
+            Clipboard.SetImage(QRcode);
+        }
+
+        public BitmapImage ConvertBitmapToBitmapImage(QRCodeData qrCodeData)
+        {
+            var qrCode = new QRCode(qrCodeData);
+            Bitmap bitmap = qrCode.GetGraphic(20, System.Drawing.Color.Black, System.Drawing.Color.White, true);
+
+            using (MemoryStream memory = new MemoryStream())
+            {
+                bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Png);
+                memory.Position = 0;
+
+                BitmapImage bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.StreamSource = memory;
+                bitmapImage.EndInit();
+
+                bitmapImage.Freeze();
+                bitmap.Dispose();
+
+                return bitmapImage;
+            }
+        }
         public void Search(string search, string genre, int sortBy) // 0 - От а до я, 1 - От я до а, 2 - Цена по возрастанию, 3 - Цена по убыванию
         {
             List<Performance> filted = new List<Performance>();

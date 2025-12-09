@@ -19,8 +19,11 @@ namespace Theater.Services.DataBase
         public int Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
-        public string PasswordHash { get; set; }
-        public string ImageUrl { get; set; }
+        public string ImageUrl
+        {
+            get;
+            set { field = value; OnPropertyChanged(nameof(ImageUrl)); }
+        }
         public BitmapImage Image
         {
             get;
@@ -29,6 +32,7 @@ namespace Theater.Services.DataBase
         public UserRole Role { get; set; }
         public DateTime CreatedAt { get; set; }
         public string CreatedAtStr { get; set; }
+        public string MoneySpend { get; set; }
         public List<Ticket> Tickets
         {
             get;
@@ -36,8 +40,9 @@ namespace Theater.Services.DataBase
         } = new();
         public ObservableCollection<OrderView> OrderViews { get; set; } = new();
 
-        public User(int userId) 
+        public User(int userId = -1) 
         {
+            if (userId == -1) { return; }
             var conn = DBmanager.GetConnection();
             var cmd = new MySqlCommand($"SELECT * FROM `Users` WHERE id = {userId}",conn);
             using (var reader = cmd.ExecuteReader())
@@ -47,7 +52,6 @@ namespace Theater.Services.DataBase
                     Id = userId;
                     Name = $"{reader.GetString(2)} {reader.GetString(1)}";
                     Email = reader.GetString(3);
-                    PasswordHash = reader.GetString(4);
                     ImageUrl = reader.GetString(5);
                     Role = (UserRole)Enum.Parse(typeof(UserRole), reader.GetString(6));
                     CreatedAt = reader.GetDateTime(7);
@@ -61,18 +65,35 @@ namespace Theater.Services.DataBase
 
             CreatedAtStr = CreatedAt.ToString("В клубе с dd MMMM yyyy года");
 
-            cmd = new MySqlCommand($"SELECT id FROM `Tickets` WHERE user_id = {Id}", conn);
-            List<int> ids = new();
+            //cmd = new MySqlCommand($"SELECT id FROM `Tickets` WHERE user_id = {Id}", conn);
+            //List<int> ids = new();
+            //using (var reader = cmd.ExecuteReader())
+            //{
+            //    while (reader.Read())
+            //    {
+            //        ids.Add(reader.GetInt32(0));
+            //    }
+            //}
+            //foreach (int id in ids)
+            //{
+            //    Tickets.Add(new Ticket(id));
+            //}
+            cmd = new MySqlCommand($"SELECT * FROM `Tickets` WHERE user_id = {Id}", conn);
             using (var reader = cmd.ExecuteReader())
             {
                 while (reader.Read())
                 {
-                    ids.Add(reader.GetInt32(0));
+                    Tickets.Add(new Ticket()
+                    {
+                        Id = reader.GetInt32(0),
+                        PerformanceId = reader.GetInt32(1),
+                        SeatId = reader.GetInt32(2),
+                        UserId = reader.GetInt32(3),
+                        Price = reader.GetFloat(4),
+                        Status = (TicketStatus)Enum.Parse(typeof(TicketStatus), reader.GetString(5)),
+                        CreatedAt = reader.GetDateTime(6)
+                    });
                 }
-            }
-            foreach (int id in ids)
-            {
-                Tickets.Add(new Ticket(id));
             }
 
 
@@ -96,7 +117,7 @@ namespace Theater.Services.DataBase
                     while (reader.Read())
                     {
                         order.Title = reader.GetString(0);
-                        order.Price = $"{reader.GetFloat(1):F0}";
+                        order.Price = $"{reader.GetFloat(1) * Tickets.Where(t => t.PerformanceId == order.PerformanceId).ToList().Count:F0}";
                         order.Date = reader.GetMySqlDateTime(2).GetDateTime().ToString("dd MMMM yyyy г. в HH:mm");
                         order.Hall = reader.GetString(3);
                     }
@@ -116,7 +137,15 @@ namespace Theater.Services.DataBase
                 order.Seats = String.Join(",", strs);
                 OrderViews.Add(order);
             }
-            Debug.WriteLine($"{Tickets.Count} | {OrderViews.Count}");
+
+            using (var reader = new MySqlCommand($"SELECT COALESCE(SUM(price), 0) AS TotalSpent FROM Tickets WHERE user_id = {Id};",conn).ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    MoneySpend = $"{reader.GetFloat(0):F0}";
+                }
+            }
+
         }
 
         public void OnPropertyChanged(string propertyName)
@@ -124,6 +153,14 @@ namespace Theater.Services.DataBase
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+
+            if (propertyName == nameof(ImageUrl))
+            {
+                if (!String.IsNullOrEmpty(ImageUrl))
+                {
+                    Image = Task.Run(() => NetHelper.GetBitmapAsync(ImageUrl)).Result;
+                }
             }
         }
 

@@ -28,7 +28,7 @@ namespace Theater.Services.DataBase
         public Review(int reviewId)
         {
             var conn = DBmanager.GetConnection();
-            var cmd = new MySqlCommand($"SELECT * FROM `PlayReviews` WHERE id = {reviewId}",conn);
+            var cmd = new MySqlCommand($"SELECT * FROM `PlayReviews` WHERE id = {reviewId}", conn);
             using (var reader = cmd.ExecuteReader())
             {
                 while (reader.Read())
@@ -42,7 +42,34 @@ namespace Theater.Services.DataBase
                 }
             }
             DateStr = ReviewDate.GetDateTime().ToString("dd MMMM yyyyг");
-            _User = new User(UserId);
+            cmd = new MySqlCommand(@"
+            SELECT r.*, u.first_name, u.last_name, u.image_path, u.created_at 
+            FROM PlayReviews r
+            JOIN Users u ON r.user_id = u.id
+            WHERE r.id = @ReviewId", conn);
+            cmd.Parameters.AddWithValue("@ReviewId", reviewId);
+
+            using (var reader = cmd.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    Id = reviewId;
+                    PlayId = reader.GetInt32("play_id");
+                    UserId = reader.GetInt32("user_id");
+                    Rating = reader.GetInt32("rating");
+                    Comment = reader.GetString("comment");
+                    ReviewDate = reader.GetMySqlDateTime("review_date");
+                    DateStr = ReviewDate.GetDateTime().ToString("dd MMMM yyyy");
+
+                    // Создаём только нужные данные пользователя
+                    _User = new User()
+                    {
+                        Name = $"{reader.GetString("last_name")} {reader.GetString("first_name")}",
+                        ImageUrl = reader.GetString("image_path"),
+                        CreatedAt = reader.GetDateTime("created_at")
+                    };
+                }
+            }
         }
 
         public void OnPropertyChanged(string propertyName)

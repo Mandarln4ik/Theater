@@ -1,0 +1,30 @@
+﻿<Page x:Class="Theater.AdminPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Theater"
+      mc:Ignorable="d" 
+      d:DesignHeight="800" d:DesignWidth="1050"
+      Title="AdminPage" Loaded="Page_Loaded">
+
+    <Grid d:Background="#FF242740">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        
+        <!-- Panels -->
+        <StackPanel Orientation="Horizontal" Margin="10 0">
+            <Button Style="{StaticResource NavButton}" Content="Сессии" Foreground="White"
+                    FontSize="24" Margin="10 0" Click="Session_Click"/>
+            <Button Style="{StaticResource NavButton}" Content="Спектакли" Foreground="White"
+                    FontSize="24" Margin="10 0" Click="Plays_Click"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Frame x:Name="SessionsPage" Visibility="Visible" Source="SessionsPage.xaml" NavigationUIVisibility="Hidden"/>
+            <Frame x:Name="PlaysPage" Visibility="Hidden" Source="PlaysPage.xaml" NavigationUIVisibility="Hidden"/>
+        </Grid>
+    </Grid>
+</Page>

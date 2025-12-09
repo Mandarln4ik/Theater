@@ -15,7 +15,11 @@ namespace Theater.DataBase
         public string fullName { get; set; }
         public string birthDate { get; set; }
         public string description { get; set; }
-        public string ImageUrl { get; set; }
+        public string ImageUrl
+        {
+            get;
+            set { field = value; OnPropertyChanged(nameof(ImageUrl)); }
+        }
         public BitmapImage Image
         {
             get;
@@ -35,6 +39,18 @@ namespace Theater.DataBase
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+
+            if (propertyName == nameof(ImageUrl))
+            {
+                try
+                {
+                    if (!String.IsNullOrEmpty(ImageUrl))
+                    {
+                        Image = Task.Run(() => NetHelper.GetBitmapAsync(ImageUrl)).Result;
+                    }
+                }
+                catch { }
             }
         }
 

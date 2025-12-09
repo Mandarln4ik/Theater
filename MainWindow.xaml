@@ -24,8 +24,13 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 0 20 0">
                     <Button Content="Спектакли" Style="{StaticResource NavButton}" Click="MainBtn_Click"/>
                     <Button Content="Труппа" Style="{StaticResource NavButton}" Click="TruppaBtn_Click"/>
-                    <Button Content="Администрация" Style="{StaticResource NavButton}"/>
-                    <Button Content="Профиль" Style="{StaticResource NavButton}" Click="Profile_Click"/>
+                    <Button Content="Администрация" Style="{StaticResource NavButton}" Click="AdminBtn_Click" Visibility="{Binding Path=isAdmin, Converter={StaticResource BoolToVisibility}}"/>
+                    <Button Style="{StaticResource NavButton}" Click="Profile_Click">
+                        <TextBlock>
+                            <Run Text="Профиль"/>
+                            <Run Text="{Binding Path=currentUser.Email}"/>
+                        </TextBlock>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
@@ -43,6 +48,7 @@
                 <Frame x:Name="MainFrame" Source="MainPage.xaml" NavigationUIVisibility="Hidden"/>
                 <Frame x:Name="ProfileFrame" Source="ProfilePage.xaml" NavigationUIVisibility="Hidden"/>
                 <Frame x:Name="TruppaFrame" Source="TruppaPage.xaml" NavigationUIVisibility="Hidden"/>
+                <Frame x:Name="AdminFrame" Source="AdminPage.xaml" NavigationUIVisibility="Hidden"/>
                 <!--Footer-->
                 <Border Background="#FF242740" BorderThickness="0,2,0,0"
 BorderBrush="#FFB38D24" Grid.Row="100">

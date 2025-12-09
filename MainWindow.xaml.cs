@@ -25,10 +25,16 @@ namespace Theater
             Nav.Instance.NavigateTo(TruppaFrame);
         }
 
+        private void AdminBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Nav.Instance.NavigateTo(AdminFrame);
+        }
+
         private void OnLoad(object sender, RoutedEventArgs e)
         {
-            Nav nav = new Nav(this);
-            Nav.Instance.Add(new List<Frame> { MainFrame, TruppaFrame, BookingFrame, ProfileFrame });
+            DataContext = App.GetApp();
+            Nav nav = new();
+            Nav.Instance.Add(new List<Frame> { MainFrame, TruppaFrame, BookingFrame, ProfileFrame, AdminFrame });
             Nav.Instance.NavigateTo(MainFrame);
         }
 

@@ -17,10 +17,12 @@ namespace Theater.DataBase
     public class Performance : INotifyPropertyChanged
     {
         public int Id { get; set; }
+        public int PlayId { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public string Genre { get; set; }
         public string Director { get; set; }
+        public string Age { get; set; }
         public int DurationMinutes { get; set; }
         public float Rating { get; set; }
         public float Price { get; set; }
@@ -41,7 +43,6 @@ namespace Theater.DataBase
         public Performance(int PerformanceId)
         {
             Id = PerformanceId;
-            int playId = 0;
             int hallId = 0;
             var conn = DBmanager.GetConnection();
             MySqlCommand cmd = new MySqlCommand($"SELECT `play_id`, `hall_id`FROM Performances WHERE `id` = {PerformanceId}", conn);
@@ -49,13 +50,13 @@ namespace Theater.DataBase
             {
                 if (reader.Read())
                 {
-                    playId = reader.GetInt32(0);
+                    PlayId = reader.GetInt32(0);
                     hallId = reader.GetInt32(1);
                 }
             }
             int genreId = 0;
             int directorId = 0;
-            cmd = new MySqlCommand($"SELECT p.title, p.genre_id, p.director_id, p.duration, p.description, p.image_path, COALESCE(AVG(pr.Rating), 0.0) AS avg_rating FROM Plays p LEFT JOIN Performances perf ON perf.play_id = p.id LEFT JOIN PlayReviews pr ON pr.play_id = perf.id WHERE p.id = {playId} GROUP BY p.id, p.title, p.genre_id, p.director_id, p.duration, p.description, p.image_path", conn);
+            cmd = new MySqlCommand($"SELECT p.title, p.genre_id, p.director_id, p.age ,p.duration, p.description, p.image_path, COALESCE(AVG(pr.Rating), 0.0) AS avg_rating FROM Plays p LEFT JOIN Performances perf ON perf.play_id = p.id LEFT JOIN PlayReviews pr ON pr.play_id = perf.id WHERE p.id = {PlayId} GROUP BY p.id, p.title, p.genre_id, p.director_id, p.duration, p.description, p.image_path", conn);
             using (var reader = cmd.ExecuteReader())
             {
                 if (reader.Read())
@@ -63,10 +64,11 @@ namespace Theater.DataBase
                     Title = reader.GetString(0);
                     genreId = reader.GetInt32(1);
                     directorId = reader.GetInt32(2);
-                    DurationMinutes = reader.GetInt32(3);
-                    Description = reader.GetString(4);
-                    ImageUrl = reader.GetString(5);
-                    Rating = reader.GetFloat(6);
+                    Age = reader.GetString(3);
+                    DurationMinutes = reader.GetInt32(4);
+                    Description = reader.GetString(5);
+                    ImageUrl = reader.GetString(6);
+                    Rating = reader.GetFloat(7);
                 }
             }
             cmd = new MySqlCommand($"SELECT `name` FROM Genres WHERE `id` = {genreId}", conn);
@@ -85,7 +87,7 @@ namespace Theater.DataBase
                     Director = $"{reader.GetString(1)} {reader.GetString(0)}";
                 }
             }
-            cmd = new MySqlCommand($"SELECT \r\n    perf.id AS id,\r\n    perf.hall_id AS hall_id,\r\n    perf.performance_date AS Performance_date, perf.price \r\nFROM \r\n    Performances perf\r\n    INNER JOIN Halls h ON perf.hall_id = h.id\r\nWHERE \r\n    perf.play_id = {playId};", conn);
+            cmd = new MySqlCommand($"SELECT \r\n    perf.id AS id,\r\n    perf.hall_id AS hall_id,\r\n    perf.performance_date AS Performance_date, perf.price \r\nFROM \r\n    Performances perf\r\n    INNER JOIN Halls h ON perf.hall_id = h.id\r\nWHERE \r\n    perf.play_id = {PlayId};", conn);
             List<(int, int, string, string, float)> data = new();
             using (var reader = cmd.ExecuteReader())
             {
@@ -98,7 +100,7 @@ namespace Theater.DataBase
             foreach (var i in data)
             {
                 avaibleSession.Add(
-                        new AvailableSession(i.Item2)
+                        new AvailableSession(i.Item2, i.Item1)
                         {
                             id = i.Item1,
                             Date = i.Item3,
@@ -129,6 +131,14 @@ namespace Theater.DataBase
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+
+            if (propertyName == nameof(ImageUrl))
+            {
+                if (!String.IsNullOrEmpty(ImageUrl))
+                {
+                    Image = Task.Run(() => NetHelper.GetBitmapAsync(ImageUrl)).Result;
+                }
             }
         }
 

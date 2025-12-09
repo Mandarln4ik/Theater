@@ -13,13 +13,11 @@ namespace Theater.Services
     public class NavigationService
     {
         public static NavigationService Instance;
-        private MainWindow window;
         private List<Frame> _frames;
 
-        public NavigationService(MainWindow mainWindow)
+        public NavigationService()
         {
             Instance = this;
-            window = mainWindow;
             _frames = new List<Frame>();
         }
 

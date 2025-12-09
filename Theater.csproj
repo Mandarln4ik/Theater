@@ -68,6 +68,9 @@
       <HintPath>packages\MySql.Data.9.5.0\lib\net462\MySql.Data.dll</HintPath>
     </Reference>
     <Reference Include="PresentationFramework.Aero2" />
+    <Reference Include="QRCoder, Version=1.7.0.0, Culture=neutral, PublicKeyToken=c4ed5b9ae8358a28, processorArchitecture=MSIL">
+      <HintPath>packages\QRCoder.1.7.0\lib\net40\QRCoder.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -78,6 +81,7 @@
       <HintPath>packages\System.Configuration.ConfigurationManager.8.0.0\lib\net462\System.Configuration.ConfigurationManager.dll</HintPath>
     </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Pipelines, Version=5.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.IO.Pipelines.5.0.2\lib\net461\System.IO.Pipelines.dll</HintPath>
     </Reference>
@@ -117,11 +121,21 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AdminPage.xaml.cs">
+      <DependentUpon>AdminPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="AvailabilityToColorConverter.cs" />
+    <Compile Include="BoolToVisibilityConverter.cs" />
+    <Compile Include="PlaysPage.xaml.cs">
+      <DependentUpon>PlaysPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ProfilePage.xaml.cs">
       <DependentUpon>ProfilePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Services\DataBase\Ticket.cs" />
+    <Compile Include="SessionsPage.xaml.cs">
+      <DependentUpon>SessionsPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SignIn.xaml.cs">
       <DependentUpon>SignIn.xaml</DependentUpon>
     </Compile>
@@ -146,11 +160,25 @@
       <DependentUpon>TruppaPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\OrderView.cs" />
+    <Compile Include="View\PerformanceView.cs" />
+    <Compile Include="View\PlayView.cs" />
+    <Page Include="AdminPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="BookingPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="PlaysPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ProfilePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SessionsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -218,6 +246,13 @@
   <ItemGroup>
     <Resource Include="icons\star_e.png" />
     <Resource Include="icons\star_f.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\qr-code.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\delete.png" />
+    <Resource Include="icons\edit.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

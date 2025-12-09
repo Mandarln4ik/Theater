@@ -15,7 +15,7 @@ namespace Theater.DataBase
         public string Name { get; set; }
         public ObservableCollection<HallRow> Rows { get; set; } = new ObservableCollection<HallRow>();
 
-        public Hall(int id)
+        public Hall(int id, int PerformanceId)
         {
             int rowsCount = 0;
             int seatsInRow = 0;
@@ -32,26 +32,32 @@ namespace Theater.DataBase
                 }
             }
 
-            cmd = new MySqlCommand($"SELECT `id`, `seat_number`, `status` FROM Seats WHERE hall_id = {id} ORDER BY `row_number` DESC, `seat_number` ASC;", conn);
+            cmd = new MySqlCommand($"SELECT s.id, s.row_number, s.seat_number, IF(t.id IS NOT NULL, TRUE, FALSE) AS IsOccupied FROM Seats s LEFT JOIN Tickets t ON t.seat_id = s.id AND t.performance_id = {PerformanceId} WHERE s.hall_id = {id} ORDER BY s.row_number ASC, s.seat_number ASC", conn);
+            Rows.Clear(); // очищаем перед загрузкой
+
             using (var reader = cmd.ExecuteReader())
             {
-                for (int r = 0; r < rowsCount; r++)
+                HallRow currentRow = null;
+                int lastRowNumber = -1;
+
+                while (reader.Read())
                 {
-                    HallRow hallRow = new HallRow();
-                    hallRow.RowNumber = r + 1;
-                    for (int s = 0; s < seatsInRow; s++)
+                    int rowNumber = reader.GetInt32(1);
+
+                    if (rowNumber != lastRowNumber)
                     {
-                        if (reader.Read())
-                        {
-                            hallRow.Seats.Add(new Seat
-                            {
-                                Id = reader.GetInt32(0),
-                                Name = $"{reader.GetInt32(1)}", RowName = $"{r + 1}",
-                                Status = reader.GetBoolean(2)
-                            });
-                        }
+                        currentRow = new HallRow { RowNumber = rowNumber };
+                        Rows.Add(currentRow);
+                        lastRowNumber = rowNumber;
                     }
-                    Rows.Add(hallRow);
+
+                    currentRow.Seats.Add(new Seat
+                    {
+                        Id = reader.GetInt32(0),
+                        Name = $"{reader.GetInt32(2)}",
+                        RowName = $"{reader.GetInt32(1)}",
+                        Status = reader.GetBoolean(3)
+                    });
                 }
             }
         }

@@ -16,7 +16,7 @@ namespace Theater.DataBase
         {
             get;
             set { field = value; OnPropertyChanged(nameof(SeatStatus)); }
-        }
+        } = SeatStatus.Available;
 
         public bool Status
         {
@@ -24,20 +24,16 @@ namespace Theater.DataBase
             set { field = value; OnPropertyChanged(nameof(Status)); }
         }
 
-
-        public Seat()
-        {
-            if (Status)
-            {
-                SeatStatus = SeatStatus.Occupied;
-            }
-        }
-
         public void OnPropertyChanged(string propertyName)
         {
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+            
+            if (propertyName == nameof(Status))
+            {
+                SeatStatus = Status ? SeatStatus.Occupied : SeatStatus.Available;
             }
         }
 

@@ -21,9 +21,9 @@ namespace Theater.DataBase
             set { field = value; OnPropertyChanged(nameof(IsSelected)); }
         }
 
-        public AvailableSession(int hallId)
+        public AvailableSession(int hallId, int performanceId)
         {
-            _Hall = new Hall(hallId);
+            _Hall = new Hall(hallId, performanceId);
         }
 
         public void OnPropertyChanged(string propertyName)
